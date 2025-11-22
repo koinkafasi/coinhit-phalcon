@@ -19,8 +19,6 @@
         "monolog/monolog": "^3.5",
         "guzzlehttp/guzzle": "^7.8",
         "predis/predis": "^2.2",
-        "league/flysystem": "^3.23",
-        "league/flysystem-aws-s3-v3": "^3.23",
         "phpoffice/phpspreadsheet": "^1.29",
         "tecnickcom/tcpdf": "^6.7",
         "endroid/qr-code": "^5.0",

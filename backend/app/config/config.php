@@ -2,23 +2,22 @@
 
 use Phalcon\Config\Config;
 
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2));
-$dotenv->load();
+// Load .env if exists
+$envFile = dirname(__DIR__, 2) . '/.env';
+if (file_exists($envFile)) {
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2));
+    $dotenv->load();
+}
 
 return new Config([
     'database' => [
-        'adapter'  => 'Postgresql',
-        'host'     => $_ENV['DB_HOST'] ?? 'postgres',
-        'username' => $_ENV['DB_USER'] ?? 'tahmin1x2',
-        'password' => $_ENV['DB_PASSWORD'] ?? 'tahmin1x2',
-        'dbname'   => $_ENV['DB_NAME'] ?? 'tahmin1x2',
-        'port'     => $_ENV['DB_PORT'] ?? 5432,
-        'charset'  => 'utf8',
-        'options'  => [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ],
+        'adapter'  => 'Mysql',
+        'host'     => $_ENV['DB_HOST'] ?? 'localhost',
+        'username' => $_ENV['DB_USER'] ?? 'coinhit_user',
+        'password' => $_ENV['DB_PASS'] ?? '',
+        'dbname'   => $_ENV['DB_NAME'] ?? 'coinhit_db',
+        'port'     => $_ENV['DB_PORT'] ?? 3306,
+        'charset'  => 'utf8mb4',
     ],
 
     'redis' => [
@@ -30,15 +29,17 @@ return new Config([
     ],
 
     'application' => [
+        'appDir'         => APP_PATH . '/',
         'baseUri'        => $_ENV['APP_BASE_URI'] ?? '/',
-        'publicUrl'      => $_ENV['APP_PUBLIC_URL'] ?? 'https://api.tahmin1x2.com',
+        'publicUrl'      => $_ENV['APP_URL'] ?? 'https://coinhit.net',
         'controllersDir' => APP_PATH . '/controllers/',
         'modelsDir'      => APP_PATH . '/models/',
         'servicesDir'    => APP_PATH . '/services/',
         'middlewareDir'  => APP_PATH . '/middleware/',
         'migrationsDir'  => APP_PATH . '/migrations/',
-        'logsDir'        => BASE_PATH . '/storage/logs/',
-        'cacheDir'       => BASE_PATH . '/storage/cache/',
+        'viewsDir'       => APP_PATH . '/views/',
+        'logsDir'        => dirname(APP_PATH) . '/logs/',
+        'cacheDir'       => dirname(APP_PATH) . '/cache/',
     ],
 
     'jwt' => [

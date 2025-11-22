@@ -12,9 +12,12 @@ try {
     // Register an autoloader
     require_once BASE_PATH . '/vendor/autoload.php';
 
-    // Load environment variables
-    $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
-    $dotenv->load();
+    // Load environment variables if .env exists
+    $envFile = BASE_PATH . '/.env';
+    if (file_exists($envFile)) {
+        $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
+        $dotenv->load();
+    }
 
     // Create a DI
     $di = new FactoryDefault();

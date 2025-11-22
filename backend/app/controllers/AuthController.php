@@ -44,96 +44,109 @@ class AuthController extends BaseController
     }
 
     /**
-     * Register new user
+     * Register new user (web form)
      */
     public function registerAction()
     {
-        $data = $this->request->getJsonRawBody(true);
+        if (!$this->request->isPost()) {
+            return $this->response->redirect('/auth/register');
+        }
 
-        // Validate required fields
-        $requiredFields = ['email', 'password', 'full_name'];
-        foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
-                return $this->sendError("Field '{$field}' is required", 400);
-            }
+        $email = $this->request->getPost('email', 'email');
+        $password = $this->request->getPost('password');
+        $passwordConfirm = $this->request->getPost('password_confirm');
+        $firstName = $this->request->getPost('first_name', 'string');
+        $lastName = $this->request->getPost('last_name', 'string');
+        $username = $this->request->getPost('username', 'alphanum');
+
+        // Validation
+        if (empty($email) || empty($password) || empty($firstName) || empty($lastName) || empty($username)) {
+            $this->flashSession->error('Tüm alanları doldurmanız gerekiyor');
+            return $this->response->redirect('/auth/register');
+        }
+
+        if ($password !== $passwordConfirm) {
+            $this->flashSession->error('Şifreler eşleşmiyor');
+            return $this->response->redirect('/auth/register');
+        }
+
+        if (strlen($password) < 6) {
+            $this->flashSession->error('Şifre en az 6 karakter olmalıdır');
+            return $this->response->redirect('/auth/register');
         }
 
         // Check if email already exists
-        if (User::findFirst(['email = ?0', 'bind' => [$data['email']]])) {
-            return $this->sendError('Email already registered', 400);
+        if (User::findFirst(['conditions' => 'email = ?0', 'bind' => [$email]])) {
+            $this->flashSession->error('Bu e-posta adresi zaten kayıtlı');
+            return $this->response->redirect('/auth/register');
+        }
+
+        // Check if username already exists
+        if (User::findFirst(['conditions' => 'username = ?0', 'bind' => [$username]])) {
+            $this->flashSession->error('Bu kullanıcı adı zaten kullanılıyor');
+            return $this->response->redirect('/auth/register');
         }
 
         // Create new user
         $user = new User();
-        $user->email = $data['email'];
-        $user->password = $data['password']; // Will be hashed in beforeSave
-        $user->full_name = $data['full_name'];
-        $user->role = User::ROLE_USER;
-        $user->membership_tier = User::TIER_FREE;
+        $user->email = $email;
+        $user->username = $username;
+        $user->password = password_hash($password, PASSWORD_DEFAULT);
+        $user->full_name = trim($firstName . ' ' . $lastName);
+        $user->role = 'user';
+        $user->membership_tier = 'free';
         $user->is_active = true;
         $user->is_verified = false;
+        $user->created_at = date('Y-m-d H:i:s');
 
         if (!$user->save()) {
-            $messages = [];
-            foreach ($user->getMessages() as $message) {
-                $messages[] = $message->getMessage();
-            }
-            return $this->sendError('Failed to create user', 400, $messages);
+            $this->flashSession->error('Kayıt sırasında bir hata oluştu');
+            return $this->response->redirect('/auth/register');
         }
 
-        // Log activity
-        $this->logActivity($user, 'user_registered', 'User registered successfully');
-
-        // Generate tokens
-        $jwtService = $this->getDI()->get('jwt');
-        $accessToken = $jwtService->generateAccessToken($user);
-        $refreshToken = $jwtService->generateRefreshToken($user);
-
-        return $this->sendSuccess([
-            'user' => $user->toArray(),
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-        ], 'User registered successfully', 201);
+        $this->flashSession->success('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+        return $this->response->redirect('/auth/login');
     }
 
     /**
-     * Login user
+     * Login user (web form)
      */
     public function loginAction()
     {
-        $data = $this->request->getJsonRawBody(true);
-
-        if (empty($data['email']) || empty($data['password'])) {
-            return $this->sendError('Email and password are required', 400);
+        if (!$this->request->isPost()) {
+            return $this->response->redirect('/auth/login');
         }
 
-        $user = User::findFirst(['email = ?0', 'bind' => [$data['email']]]);
+        $email = $this->request->getPost('email', 'email');
+        $password = $this->request->getPost('password');
 
-        if (!$user || !$user->verifyPassword($data['password'])) {
-            return $this->sendError('Invalid credentials', 401);
+        if (empty($email) || empty($password)) {
+            $this->flashSession->error('E-posta ve şifre gereklidir');
+            return $this->response->redirect('/auth/login');
+        }
+
+        $user = User::findFirst(['conditions' => 'email = ?0', 'bind' => [$email]]);
+
+        if (!$user || !password_verify($password, $user->password)) {
+            $this->flashSession->error('Geçersiz kullanıcı adı veya şifre');
+            return $this->response->redirect('/auth/login');
         }
 
         if (!$user->is_active) {
-            return $this->sendError('Account is inactive', 403);
+            $this->flashSession->error('Hesabınız aktif değil');
+            return $this->response->redirect('/auth/login');
         }
 
-        // Update last login
-        $user->last_login_at = new \DateTime();
-        $user->save();
+        // Set session
+        $this->session->set('auth', [
+            'id' => $user->id,
+            'email' => $user->email,
+            'full_name' => $user->full_name,
+            'role' => $user->role
+        ]);
 
-        // Log activity
-        $this->logActivity($user, 'user_login', 'User logged in');
-
-        // Generate tokens
-        $jwtService = $this->getDI()->get('jwt');
-        $accessToken = $jwtService->generateAccessToken($user);
-        $refreshToken = $jwtService->generateRefreshToken($user);
-
-        return $this->sendSuccess([
-            'user' => $user->toArray(),
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-        ], 'Login successful');
+        $this->flashSession->success('Başarıyla giriş yaptınız');
+        return $this->response->redirect('/user/dashboard');
     }
 
     /**

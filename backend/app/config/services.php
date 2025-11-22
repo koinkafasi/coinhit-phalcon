@@ -2,7 +2,7 @@
 
 use Phalcon\Di\DiInterface;
 use Phalcon\Di\FactoryDefault;
-use Phalcon\Db\Adapter\Pdo\Postgresql as DbAdapter;
+use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
 use Phalcon\Cache\AdapterFactory;
 use Phalcon\Storage\SerializerFactory;
 use Phalcon\Logger\Logger;
@@ -29,49 +29,67 @@ $di->setShared('db', function () {
 });
 
 /**
- * Redis connection
+ * Redis connection (optional)
  */
 $di->setShared('redis', function () {
-    $config = $this->getConfig();
-    $redisConfig = $config->redis->toArray();
+    try {
+        $config = $this->getConfig();
+        $redisConfig = $config->redis->toArray();
 
-    $client = new RedisClient([
-        'scheme' => 'tcp',
-        'host'   => $redisConfig['host'],
-        'port'   => $redisConfig['port'],
-    ]);
+        $client = new RedisClient([
+            'scheme' => 'tcp',
+            'host'   => $redisConfig['host'],
+            'port'   => $redisConfig['port'],
+        ]);
 
-    if (!empty($redisConfig['auth'])) {
-        $client->auth($redisConfig['auth']);
+        if (!empty($redisConfig['auth'])) {
+            $client->auth($redisConfig['auth']);
+        }
+
+        if ($redisConfig['index'] > 0) {
+            $client->select($redisConfig['index']);
+        }
+
+        return $client;
+    } catch (\Exception $e) {
+        // Redis is optional, return null if not available
+        return null;
     }
-
-    if ($redisConfig['index'] > 0) {
-        $client->select($redisConfig['index']);
-    }
-
-    return $client;
 });
 
 /**
- * Cache service
+ * Cache service (fallback to file cache if Redis unavailable)
  */
 $di->setShared('cache', function () {
     $config = $this->getConfig();
-    $redisConfig = $config->redis->toArray();
 
     $serializerFactory = new SerializerFactory();
     $adapterFactory = new AdapterFactory($serializerFactory);
 
-    $options = [
-        'defaultSerializer' => 'Json',
-        'lifetime'          => $config->cache->lifetime,
-        'prefix'            => $config->cache->prefix,
-        'host'              => $redisConfig['host'],
-        'port'              => $redisConfig['port'],
-        'index'             => $redisConfig['index'],
-    ];
+    try {
+        // Try Redis first
+        $redisConfig = $config->redis->toArray();
+        $options = [
+            'defaultSerializer' => 'Json',
+            'lifetime'          => $config->cache->lifetime,
+            'prefix'            => $config->cache->prefix,
+            'host'              => $redisConfig['host'],
+            'port'              => $redisConfig['port'],
+            'index'             => $redisConfig['index'],
+        ];
 
-    return $adapterFactory->newInstance('redis', $options);
+        return $adapterFactory->newInstance('redis', $options);
+    } catch (\Exception $e) {
+        // Fallback to file cache
+        $options = [
+            'defaultSerializer' => 'Json',
+            'lifetime'          => $config->cache->lifetime,
+            'prefix'            => $config->cache->prefix,
+            'storageDir'        => $config->application->cacheDir,
+        ];
+
+        return $adapterFactory->newInstance('stream', $options);
+    }
 });
 
 /**
