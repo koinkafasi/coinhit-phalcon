@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phalcon-backend-env
+  namespace: tahmin1x2
+data:
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_BASE_URI: "/"
+  APP_PUBLIC_URL: "https://api.tahmin1x2.com"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "tahmin1x2"
+  DB_USER: "tahmin1x2"
+  DB_PASSWORD: "tahmin1x2"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  JWT_SECRET: "change-this-in-production-use-secret"
+  CORS_ORIGINS: "http://localhost:3000,https://tahmin1x2.com,https://www.tahmin1x2.com,https://api.tahmin1x2.com"
+  MINIO_ACCESS_KEY: "minioadmin"
+  MINIO_SECRET_KEY: "minioadmin"
+  MINIO_BUCKET: "tahmin1x2"
+  MINIO_ENDPOINT: "http://minio:9000"
+  API_FOOTBALL_KEY: "c9628c4b640448365f513088a3746750"
+  FOOTBALL_DATA_API_TOKEN: "7d57ea5de46e41769162d4e4f83673b7"
+  LOG_LEVEL: "info"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phalcon-backend
+  namespace: tahmin1x2
+  labels:
+    app: phalcon-backend
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: phalcon-backend
+  template:
+    metadata:
+      labels:
+        app: phalcon-backend
+        version: v1
+    spec:
+      containers:
+      - name: phalcon-backend
+        image: registry.tahmin1x2.svc.cluster.local:5000/phalcon-backend:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: phalcon-backend-env
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phalcon-backend
+  namespace: tahmin1x2
+  labels:
+    app: phalcon-backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: phalcon-backend

@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+vendor
+storage/logs/*
+storage/cache/*
+*.md
+!README.md
+.DS_Store
+Thumbs.db
