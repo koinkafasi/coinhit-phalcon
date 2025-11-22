@@ -1,0 +1,150 @@
+<?php $this->tag->setTitle('Hesabım'); ?>
+
+<div class="page-header">
+    <h1><i class="fas fa-user"></i> Hesabım</h1>
+</div>
+
+<div class="container">
+    <div class="dashboard-grid">
+        <!-- User Profile Card -->
+        <div class="dashboard-card profile-card">
+            <h3><i class="fas fa-user-circle"></i> Profil Bilgileri</h3>
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="profile-details">
+                    <h4><?= $this->escaper->escapeHtml($user->username) ?></h4>
+                    <p><?= $this->escaper->escapeHtml($user->email) ?></p>
+                    <span class="member-since">
+                        <i class="fas fa-calendar"></i>
+                        Üyelik: <?= date('d.m.Y', strtotime($user->created_at)) ?>
+                    </span>
+                </div>
+                <a href="/user/edit" class="btn btn-sm">
+                    <i class="fas fa-edit"></i> Düzenle
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="dashboard-card stats-card">
+            <h3><i class="fas fa-chart-bar"></i> İstatistiklerim</h3>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-value"><?= $stats->total_coupons ?? 0 ?></div>
+                    <div class="stat-label">Toplam Kupon</div>
+                </div>
+                <div class="stat-box stat-success">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value"><?= $stats->won_coupons ?? 0 ?></div>
+                    <div class="stat-label">Kazanan</div>
+                </div>
+                <div class="stat-box stat-danger">
+                    <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-value"><?= $stats->lost_coupons ?? 0 ?></div>
+                    <div class="stat-label">Kaybeden</div>
+                </div>
+                <div class="stat-box stat-info">
+                    <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                    <div class="stat-value"><?= $stats->win_rate ?? 0 ?>%</div>
+                    <div class="stat-label">Başarı Oranı</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="dashboard-card activity-card">
+            <h3><i class="fas fa-history"></i> Son Aktiviteler</h3>
+            <?php if (isset($activities) && count($activities) > 0): ?>
+                <div class="activity-list">
+                    <?php foreach ($activities as $activity): ?>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-<?= $activity->icon ?>"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><?= $this->escaper->escapeHtml($activity->description) ?></p>
+                                <small><?= date('d.m.Y H:i', strtotime($activity->created_at)) ?></small>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="no-activity">Henüz aktivite bulunmamaktadır.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Subscription Card -->
+        <div class="dashboard-card subscription-card">
+            <h3><i class="fas fa-crown"></i> Abonelik Durumu</h3>
+            <div class="subscription-info">
+                <?php if (isset($user->subscription_type) && $user->subscription_type != 'free'): ?>
+                    <div class="subscription-active">
+                        <i class="fas fa-check-circle"></i>
+                        <h4><?= strtoupper($user->subscription_type) ?> Üye</h4>
+                        <p>Bitiş: <?= date('d.m.Y', strtotime($user->subscription_expires)) ?></p>
+                    </div>
+                <?php else: ?>
+                    <div class="subscription-free">
+                        <p>Ücretsiz üye olarak kullanıyorsunuz</p>
+                        <a href="/subscription/plans" class="btn btn-primary">
+                            <i class="fas fa-crown"></i> Premium'a Yükselt
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card actions-card">
+            <h3><i class="fas fa-bolt"></i> Hızlı İşlemler</h3>
+            <div class="quick-actions">
+                <a href="/matches" class="quick-action-btn">
+                    <i class="fas fa-futbol"></i>
+                    <span>Maçlar</span>
+                </a>
+                <a href="/predictions" class="quick-action-btn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Tahminler</span>
+                </a>
+                <a href="/coupons/create" class="quick-action-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Yeni Kupon</span>
+                </a>
+                <a href="/user/settings" class="quick-action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Ayarlar</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Coupons -->
+        <div class="dashboard-card recent-coupons-card">
+            <h3><i class="fas fa-ticket-alt"></i> Son Kuponlarım</h3>
+            <?php if (isset($recentCoupons) && count($recentCoupons) > 0): ?>
+                <div class="recent-coupons-list">
+                    <?php foreach ($recentCoupons as $coupon): ?>
+                        <div class="recent-coupon-item">
+                            <div class="coupon-brief">
+                                <span class="coupon-id">#<?= $coupon->id ?></span>
+                                <span class="coupon-status status-<?= $coupon->status ?>">
+                                    <?= $coupon->status ?>
+                                </span>
+                            </div>
+                            <div class="coupon-brief-info">
+                                <span><?= $coupon->picks_count ?> Maç</span>
+                                <span>Oran: <?= $coupon->total_odds ?></span>
+                            </div>
+                            <a href="/coupons/view/<?= $coupon->id ?>" class="btn btn-xs">Görüntüle</a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <a href="/coupons" class="view-all-link">Tümünü Gör <i class="fas fa-arrow-right"></i></a>
+            <?php else: ?>
+                <p class="no-coupons">Henüz kupon oluşturmadınız.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

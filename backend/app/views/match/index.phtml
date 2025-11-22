@@ -1,0 +1,123 @@
+<?php $this->tag->setTitle('Maçlar'); ?>
+
+<div class="page-header">
+    <h1><i class="fas fa-futbol"></i> Maçlar</h1>
+</div>
+
+<div class="container">
+    <!-- Filters -->
+    <div class="filters-bar">
+        <form action="/matches" method="GET" class="filter-form">
+            <div class="filter-group">
+                <select name="sport" class="form-control">
+                    <option value="">Tüm Sporlar</option>
+                    <option value="football">Futbol</option>
+                    <option value="basketball">Basketbol</option>
+                    <option value="tennis">Tenis</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <select name="league" class="form-control">
+                    <option value="">Tüm Ligler</option>
+                    <?php if (isset($leagues)): ?>
+                        <?php foreach ($leagues as $league): ?>
+                            <option value="<?= $league->id ?>"><?= $this->escaper->escapeHtml($league->name) ?></option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <input type="date" name="date" class="form-control" 
+                       value="<?= $this->request->getQuery('date', 'string', date('Y-m-d')) ?>">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter"></i> Filtrele
+            </button>
+        </form>
+    </div>
+
+    <!-- Matches List -->
+    <div class="matches-container">
+        <?php if (isset($matches) && count($matches) > 0): ?>
+            <?php 
+            $currentLeague = '';
+            foreach ($matches as $match): 
+                if ($currentLeague != $match->league_name):
+                    if ($currentLeague != ''): ?>
+                        </div> <!-- Close previous league group -->
+                    <?php endif; ?>
+                    <div class="league-group">
+                        <h2 class="league-header">
+                            <i class="fas fa-trophy"></i> <?= $this->escaper->escapeHtml($match->league_name) ?>
+                        </h2>
+                    <?php 
+                    $currentLeague = $match->league_name;
+                endif; 
+            ?>
+                <div class="match-item">
+                    <div class="match-time">
+                        <div class="date"><?= date('d.m.Y', strtotime($match->match_date)) ?></div>
+                        <div class="time"><?= date('H:i', strtotime($match->match_date)) ?></div>
+                    </div>
+                    
+                    <div class="match-info">
+                        <div class="team home-team">
+                            <span class="team-name"><?= $this->escaper->escapeHtml($match->home_team) ?></span>
+                        </div>
+                        <div class="match-vs">VS</div>
+                        <div class="team away-team">
+                            <span class="team-name"><?= $this->escaper->escapeHtml($match->away_team) ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="match-stats">
+                        <?php if (isset($match->prediction_count)): ?>
+                            <span class="stat-badge">
+                                <i class="fas fa-chart-line"></i> <?= $match->prediction_count ?> Tahmin
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="match-actions">
+                        <a href="/matches/view/<?= $match->id ?>" class="btn btn-sm">
+                            <i class="fas fa-info-circle"></i> Detay
+                        </a>
+                        <a href="/predictions/create/<?= $match->id ?>" class="btn btn-sm btn-primary">
+                            <i class="fas fa-chart-line"></i> Tahmin
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            </div> <!-- Close last league group -->
+        <?php else: ?>
+            <div class="no-data">
+                <i class="fas fa-calendar-times"></i>
+                <p>Seçili kriterlere uygun maç bulunamadı.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Pagination -->
+    <?php if (isset($page)): ?>
+        <div class="pagination">
+            <?php if ($page->current > 1): ?>
+                <a href="?page=<?= $page->current - 1 ?>" class="btn btn-sm">
+                    <i class="fas fa-chevron-left"></i> Önceki
+                </a>
+            <?php endif; ?>
+            
+            <span class="page-info">
+                Sayfa <?= $page->current ?> / <?= $page->total_pages ?>
+            </span>
+            
+            <?php if ($page->current < $page->total_pages): ?>
+                <a href="?page=<?= $page->current + 1 ?>" class="btn btn-sm">
+                    Sonraki <i class="fas fa-chevron-right"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>

@@ -1,0 +1,111 @@
+<?php $this->tag->setTitle('Maç Detayı'); ?>
+
+<div class="container">
+    <?php if (isset($match)): ?>
+        <div class="match-detail">
+            <!-- Match Header -->
+            <div class="match-detail-header">
+                <div class="league-info">
+                    <i class="fas fa-trophy"></i>
+                    <span><?= $this->escaper->escapeHtml($match->league_name) ?></span>
+                </div>
+                <div class="match-date">
+                    <i class="fas fa-calendar"></i>
+                    <?= date('d.m.Y H:i', strtotime($match->match_date)) ?>
+                </div>
+            </div>
+
+            <!-- Teams -->
+            <div class="match-teams-detail">
+                <div class="team-detail home">
+                    <div class="team-logo">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2><?= $this->escaper->escapeHtml($match->home_team) ?></h2>
+                    <?php if (isset($match->home_form)): ?>
+                        <div class="team-form"><?= $match->home_form ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="match-vs-detail">
+                    <div class="vs-circle">VS</div>
+                    <?php if ($match->status == 'finished'): ?>
+                        <div class="match-score">
+                            <?= $match->home_score ?> - <?= $match->away_score ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="team-detail away">
+                    <div class="team-logo">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2><?= $this->escaper->escapeHtml($match->away_team) ?></h2>
+                    <?php if (isset($match->away_form)): ?>
+                        <div class="team-form"><?= $match->away_form ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <?php if (isset($statistics)): ?>
+                <div class="match-statistics">
+                    <h3><i class="fas fa-chart-bar"></i> İstatistikler</h3>
+                    <div class="stats-grid">
+                        <?php foreach ($statistics as $stat): ?>
+                            <div class="stat-row">
+                                <div class="stat-home"><?= $stat->home_value ?></div>
+                                <div class="stat-label"><?= $this->escaper->escapeHtml($stat->stat_name) ?></div>
+                                <div class="stat-away"><?= $stat->away_value ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Predictions -->
+            <?php if (isset($predictions) && count($predictions) > 0): ?>
+                <div class="match-predictions">
+                    <h3><i class="fas fa-chart-line"></i> Tahminler</h3>
+                    <div class="predictions-list">
+                        <?php foreach ($predictions as $prediction): ?>
+                            <div class="prediction-item">
+                                <div class="prediction-info">
+                                    <strong><?= $this->escaper->escapeHtml($prediction->prediction_type) ?></strong>
+                                    <span class="confidence-badge confidence-<?= $prediction->confidence_level ?>">
+                                        <?= $prediction->confidence_level ?>% Güven
+                                    </span>
+                                </div>
+                                <div class="prediction-desc">
+                                    <?= $this->escaper->escapeHtml($prediction->description) ?>
+                                </div>
+                                <?php if (isset($prediction->odd)): ?>
+                                    <div class="prediction-odd">Oran: <?= $prediction->odd ?></div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Actions -->
+            <div class="match-actions-detail">
+                <a href="/predictions/create/<?= $match->id ?>" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Tahmin Oluştur
+                </a>
+                <a href="/coupons/add-match/<?= $match->id ?>" class="btn btn-success">
+                    <i class="fas fa-ticket-alt"></i> Kupona Ekle
+                </a>
+                <a href="/matches" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Tüm Maçlar
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="no-data">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Maç bulunamadı.</p>
+            <a href="/matches" class="btn">Maçlara Dön</a>
+        </div>
+    <?php endif; ?>
+</div>

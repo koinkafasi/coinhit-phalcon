@@ -1,0 +1,134 @@
+<?php $this->tag->setTitle('Ana Sayfa'); ?>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1><i class="fas fa-trophy"></i> CoinHit'e Hoş Geldiniz</h1>
+            <p>Profesyonel spor tahminleri ile kazancınızı artırın</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Başarı Oranı</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Aktif Kullanıcı</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Başarılı Tahmin</div>
+                </div>
+            </div>
+            <?php if (!$this->session->has('auth')): ?>
+                <a href="/auth/register" class="btn btn-primary btn-lg">Hemen Başla</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <h2>Özelliklerimiz</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>Yapay Zeka Tahminleri</h3>
+                <p>Gelişmiş algoritmalar ile en doğru tahminler</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Detaylı İstatistikler</h3>
+                <p>Kapsamlı maç ve takım analizleri</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>Canlı Güncellemeler</h3>
+                <p>Gerçek zamanlı maç verileri</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Güvenli Platform</h3>
+                <p>Verileriniz tamamen güvende</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Today's Matches -->
+<section class="today-matches">
+    <div class="container">
+        <h2>Bugünün Maçları</h2>
+        <div class="matches-list">
+            <?php if (isset($todayMatches) && count($todayMatches) > 0): ?>
+                <?php foreach ($todayMatches as $match): ?>
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span class="league"><?= $this->escaper->escapeHtml($match->league_name) ?></span>
+                            <span class="match-time"><?= date('H:i', strtotime($match->match_date)) ?></span>
+                        </div>
+                        <div class="match-teams">
+                            <div class="team home">
+                                <span class="team-name"><?= $this->escaper->escapeHtml($match->home_team) ?></span>
+                            </div>
+                            <div class="vs">VS</div>
+                            <div class="team away">
+                                <span class="team-name"><?= $this->escaper->escapeHtml($match->away_team) ?></span>
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            <a href="/matches/view/<?= $match->id ?>" class="btn btn-sm">Detay</a>
+                            <a href="/predictions/view/<?= $match->id ?>" class="btn btn-sm btn-primary">Tahmin Gör</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="no-matches">Bugün için maç bulunmamaktadır.</p>
+            <?php endif; ?>
+        </div>
+        <div class="text-center mt-4">
+            <a href="/matches" class="btn btn-outline">Tüm Maçları Gör</a>
+        </div>
+    </div>
+</section>
+
+<!-- Top Predictions -->
+<section class="top-predictions">
+    <div class="container">
+        <h2>Popüler Tahminler</h2>
+        <div class="predictions-grid">
+            <?php if (isset($topPredictions) && count($topPredictions) > 0): ?>
+                <?php foreach ($topPredictions as $prediction): ?>
+                    <div class="prediction-card">
+                        <div class="prediction-header">
+                            <span class="confidence confidence-<?= $prediction->confidence_level ?>">
+                                <?= $prediction->confidence_level ?>% Güven
+                            </span>
+                        </div>
+                        <div class="prediction-match">
+                            <?= $this->escaper->escapeHtml($prediction->match_info) ?>
+                        </div>
+                        <div class="prediction-type">
+                            <strong><?= $this->escaper->escapeHtml($prediction->prediction_type) ?></strong>
+                        </div>
+                        <a href="/predictions/view/<?= $prediction->id ?>" class="btn btn-sm">İncele</a>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>Henüz tahmin bulunmamaktadır.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<?php if (!$this->session->has('auth')): ?>
+<section class="cta-section">
+    <div class="container">
+        <h2>Kazanmaya Başlamak İçin Hazır mısınız?</h2>
+        <p>Hemen ücretsiz üye olun ve profesyonel tahminlere erişin</p>
+        <a href="/auth/register" class="btn btn-primary btn-lg">Ücretsiz Kayıt Ol</a>
+    </div>
+</section>
+<?php endif; ?>

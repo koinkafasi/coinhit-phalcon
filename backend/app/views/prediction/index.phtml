@@ -1,0 +1,124 @@
+<?php $this->tag->setTitle('Tahminler'); ?>
+
+<div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Tahminler</h1>
+</div>
+
+<div class="container">
+    <!-- Filter Tabs -->
+    <div class="tabs">
+        <a href="/predictions?filter=all" class="tab <?= !isset($_GET['filter']) || $_GET['filter'] == 'all' ? 'active' : '' ?>">
+            Tüm Tahminler
+        </a>
+        <a href="/predictions?filter=today" class="tab <?= isset($_GET['filter']) && $_GET['filter'] == 'today' ? 'active' : '' ?>">
+            Bugünün Tahminleri
+        </a>
+        <a href="/predictions?filter=high" class="tab <?= isset($_GET['filter']) && $_GET['filter'] == 'high' ? 'active' : '' ?>">
+            Yüksek Güven
+        </a>
+        <a href="/predictions?filter=my" class="tab <?= isset($_GET['filter']) && $_GET['filter'] == 'my' ? 'active' : '' ?>">
+            Tahminlerim
+        </a>
+    </div>
+
+    <!-- Predictions Grid -->
+    <div class="predictions-container">
+        <?php if (isset($predictions) && count($predictions) > 0): ?>
+            <div class="predictions-grid">
+                <?php foreach ($predictions as $prediction): ?>
+                    <div class="prediction-card-full">
+                        <div class="prediction-card-header">
+                            <span class="confidence-badge confidence-<?= $prediction->confidence_level ?>">
+                                <i class="fas fa-percentage"></i> <?= $prediction->confidence_level ?>% Güven
+                            </span>
+                            <span class="prediction-date">
+                                <i class="fas fa-clock"></i> 
+                                <?= date('d.m.Y H:i', strtotime($prediction->created_at)) ?>
+                            </span>
+                        </div>
+
+                        <div class="prediction-match-info">
+                            <div class="league-badge">
+                                <i class="fas fa-trophy"></i> 
+                                <?= $this->escaper->escapeHtml($prediction->league_name) ?>
+                            </div>
+                            <div class="match-teams-small">
+                                <?= $this->escaper->escapeHtml($prediction->home_team) ?> 
+                                <span class="vs">vs</span> 
+                                <?= $this->escaper->escapeHtml($prediction->away_team) ?>
+                            </div>
+                            <div class="match-datetime">
+                                <?= date('d.m.Y H:i', strtotime($prediction->match_date)) ?>
+                            </div>
+                        </div>
+
+                        <div class="prediction-content">
+                            <div class="prediction-type-badge">
+                                <?= $this->escaper->escapeHtml($prediction->prediction_type) ?>
+                            </div>
+                            <p class="prediction-description">
+                                <?= $this->escaper->escapeHtml($prediction->description) ?>
+                            </p>
+                        </div>
+
+                        <?php if (isset($prediction->analysis)): ?>
+                            <div class="prediction-analysis">
+                                <strong><i class="fas fa-brain"></i> Analiz:</strong>
+                                <p><?= nl2br($this->escaper->escapeHtml($prediction->analysis)) ?></p>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="prediction-footer">
+                            <div class="prediction-stats">
+                                <?php if (isset($prediction->odd)): ?>
+                                    <span class="odd-badge">
+                                        <i class="fas fa-coins"></i> Oran: <?= $prediction->odd ?>
+                                    </span>
+                                <?php endif; ?>
+                                <?php if (isset($prediction->likes_count)): ?>
+                                    <span class="likes-badge">
+                                        <i class="fas fa-thumbs-up"></i> <?= $prediction->likes_count ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="prediction-actions">
+                                <a href="/predictions/view/<?= $prediction->id ?>" class="btn btn-sm">
+                                    <i class="fas fa-eye"></i> Detay
+                                </a>
+                                <a href="/coupons/add/<?= $prediction->id ?>" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Kupona Ekle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="no-data">
+                <i class="fas fa-chart-line"></i>
+                <p>Henüz tahmin bulunmamaktadır.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Pagination -->
+    <?php if (isset($page)): ?>
+        <div class="pagination">
+            <?php if ($page->current > 1): ?>
+                <a href="?page=<?= $page->current - 1 ?>" class="btn btn-sm">
+                    <i class="fas fa-chevron-left"></i> Önceki
+                </a>
+            <?php endif; ?>
+            
+            <span class="page-info">
+                Sayfa <?= $page->current ?> / <?= $page->total_pages ?>
+            </span>
+            
+            <?php if ($page->current < $page->total_pages): ?>
+                <a href="?page=<?= $page->current + 1 ?>" class="btn btn-sm">
+                    Sonraki <i class="fas fa-chevron-right"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>

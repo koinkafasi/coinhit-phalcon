@@ -1,0 +1,96 @@
+<?php $this->tag->setTitle('Kayıt Ol'); ?>
+
+<div class="auth-container">
+    <div class="auth-box">
+        <div class="auth-header">
+            <h1><i class="fas fa-user-plus"></i> Kayıt Ol</h1>
+            <p>Ücretsiz hesap oluşturun</p>
+        </div>
+
+        <form action="/auth/register" method="POST" class="auth-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">
+                        <i class="fas fa-user"></i> Ad
+                    </label>
+                    <input type="text" id="first_name" name="first_name" required 
+                           placeholder="Adınız"
+                           value="<?= $this->request->getPost('first_name', 'string') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">
+                        <i class="fas fa-user"></i> Soyad
+                    </label>
+                    <input type="text" id="last_name" name="last_name" required 
+                           placeholder="Soyadınız"
+                           value="<?= $this->request->getPost('last_name', 'string') ?>">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-at"></i> Kullanıcı Adı
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="kullaniciadi"
+                       value="<?= $this->request->getPost('username', 'alphanum') ?>">
+            </div>
+
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i> E-posta
+                </label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="ornek@email.com"
+                       value="<?= $this->request->getPost('email', 'email') ?>">
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i> Şifre
+                </label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="••••••••" minlength="6">
+                <small>En az 6 karakter olmalıdır</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirm">
+                    <i class="fas fa-lock"></i> Şifre Tekrar
+                </label>
+                <input type="password" id="password_confirm" name="password_confirm" required 
+                       placeholder="••••••••">
+            </div>
+
+            <div class="form-group form-check">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">
+                    <a href="/terms" target="_blank">Kullanım Şartları</a> ve 
+                    <a href="/privacy" target="_blank">Gizlilik Politikası</a>'nı kabul ediyorum
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-user-plus"></i> Kayıt Ol
+            </button>
+
+            <div class="form-footer">
+                <a href="/auth/login">Zaten hesabın var mı? Giriş Yap</a>
+            </div>
+        </form>
+
+        <div class="auth-divider">
+            <span>veya</span>
+        </div>
+
+        <div class="social-login">
+            <button class="btn btn-social btn-google">
+                <i class="fab fa-google"></i> Google ile Kayıt Ol
+            </button>
+            <button class="btn btn-social btn-facebook">
+                <i class="fab fa-facebook"></i> Facebook ile Kayıt Ol
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,129 @@
+<?php $this->tag->setTitle('Kuponlarım'); ?>
+
+<div class="page-header">
+    <h1><i class="fas fa-ticket-alt"></i> Kuponlarım</h1>
+    <a href="/coupons/create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Yeni Kupon Oluştur
+    </a>
+</div>
+
+<div class="container">
+    <!-- Tabs -->
+    <div class="tabs">
+        <a href="/coupons?status=active" class="tab <?= !isset($_GET['status']) || $_GET['status'] == 'active' ? 'active' : '' ?>">
+            <i class="fas fa-play-circle"></i> Aktif
+        </a>
+        <a href="/coupons?status=won" class="tab <?= isset($_GET['status']) && $_GET['status'] == 'won' ? 'active' : '' ?>">
+            <i class="fas fa-check-circle"></i> Kazananlar
+        </a>
+        <a href="/coupons?status=lost" class="tab <?= isset($_GET['status']) && $_GET['status'] == 'lost' ? 'active' : '' ?>">
+            <i class="fas fa-times-circle"></i> Kaybedenler
+        </a>
+        <a href="/coupons?status=all" class="tab <?= isset($_GET['status']) && $_GET['status'] == 'all' ? 'active' : '' ?>">
+            <i class="fas fa-list"></i> Tümü
+        </a>
+    </div>
+
+    <!-- Coupons List -->
+    <div class="coupons-container">
+        <?php if (isset($coupons) && count($coupons) > 0): ?>
+            <?php foreach ($coupons as $coupon): ?>
+                <div class="coupon-card status-<?= $coupon->status ?>">
+                    <div class="coupon-header">
+                        <div class="coupon-title">
+                            <h3>
+                                <i class="fas fa-ticket-alt"></i> 
+                                Kupon #<?= $coupon->id ?>
+                            </h3>
+                            <span class="coupon-status status-badge-<?= $coupon->status ?>">
+                                <?php 
+                                $statusLabels = [
+                                    'active' => 'Aktif',
+                                    'won' => 'Kazandı',
+                                    'lost' => 'Kaybetti',
+                                    'pending' => 'Bekliyor'
+                                ];
+                                echo $statusLabels[$coupon->status] ?? $coupon->status;
+                                ?>
+                            </span>
+                        </div>
+                        <div class="coupon-date">
+                            <i class="fas fa-calendar"></i>
+                            <?= date('d.m.Y H:i', strtotime($coupon->created_at)) ?>
+                        </div>
+                    </div>
+
+                    <div class="coupon-body">
+                        <div class="coupon-info-grid">
+                            <div class="coupon-info-item">
+                                <span class="label">Maç Sayısı:</span>
+                                <span class="value"><?= $coupon->picks_count ?? 0 ?></span>
+                            </div>
+                            <div class="coupon-info-item">
+                                <span class="label">Toplam Oran:</span>
+                                <span class="value odds-value"><?= number_format($coupon->total_odds, 2) ?></span>
+                            </div>
+                            <div class="coupon-info-item">
+                                <span class="label">Bahis:</span>
+                                <span class="value"><?= number_format($coupon->stake_amount, 2) ?> ₺</span>
+                            </div>
+                            <div class="coupon-info-item">
+                                <span class="label">Potansiyel Kazanç:</span>
+                                <span class="value potential-win">
+                                    <?= number_format($coupon->potential_win, 2) ?> ₺
+                                </span>
+                            </div>
+                        </div>
+
+                        <?php if (isset($coupon->picks) && count($coupon->picks) > 0): ?>
+                            <div class="coupon-picks">
+                                <h4>Seçimler:</h4>
+                                <?php foreach ($coupon->picks as $pick): ?>
+                                    <div class="pick-item pick-status-<?= $pick->status ?>">
+                                        <div class="pick-match">
+                                            <strong><?= $this->escaper->escapeHtml($pick->match_info) ?></strong>
+                                        </div>
+                                        <div class="pick-prediction">
+                                            <?= $this->escaper->escapeHtml($pick->prediction_type) ?>
+                                        </div>
+                                        <div class="pick-odd">
+                                            <?= $pick->odd ?>
+                                        </div>
+                                        <div class="pick-status-icon">
+                                            <?php if ($pick->status == 'won'): ?>
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            <?php elseif ($pick->status == 'lost'): ?>
+                                                <i class="fas fa-times-circle text-danger"></i>
+                                            <?php else: ?>
+                                                <i class="fas fa-clock text-warning"></i>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="coupon-footer">
+                        <a href="/coupons/view/<?= $coupon->id ?>" class="btn btn-sm">
+                            <i class="fas fa-eye"></i> Detay
+                        </a>
+                        <?php if ($coupon->status == 'active'): ?>
+                            <a href="/coupons/share/<?= $coupon->id ?>" class="btn btn-sm btn-outline">
+                                <i class="fas fa-share-alt"></i> Paylaş
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="no-data">
+                <i class="fas fa-ticket-alt"></i>
+                <p>Henüz kupon oluşturmadınız.</p>
+                <a href="/coupons/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> İlk Kuponunuzu Oluşturun
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
