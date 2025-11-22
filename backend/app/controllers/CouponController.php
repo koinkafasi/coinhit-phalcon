@@ -249,3 +249,69 @@ class CouponController extends BaseController
         ], 'Coupon shared successfully');
     }
 }
+
+    /**
+     * Coupons list page
+     */
+    public function listPageAction()
+    {
+        if (!$this->session->has('auth')) {
+            $this->flashSession->error('Lütfen giriş yapın');
+            return $this->response->redirect('/auth/login');
+        }
+
+        $userId = $this->session->get('auth')['id'];
+        $status = $this->request->getQuery('status', 'string', 'active');
+
+        $conditions = ['user_id = :userId:'];
+        $bind = ['userId' => $userId];
+
+        if ($status !== 'all') {
+            $conditions[] = 'status = :status:';
+            $bind['status'] = $status;
+        }
+
+        $this->view->coupons = \Tahmin\Models\Coupon\Coupon::find([
+            'conditions' => implode(' AND ', $conditions),
+            'bind' => $bind,
+            'order' => 'created_at DESC'
+        ]);
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Coupon detail page
+     */
+    public function viewPageAction($id)
+    {
+        if (!$this->session->has('auth')) {
+            $this->flashSession->error('Lütfen giriş yapın');
+            return $this->response->redirect('/auth/login');
+        }
+
+        $coupon = \Tahmin\Models\Coupon\Coupon::findFirst($id);
+        if (!$coupon || $coupon->user_id != $this->session->get('auth')['id']) {
+            $this->flashSession->error('Kupon bulunamadı');
+            return $this->response->redirect('/coupons');
+        }
+
+        $this->view->coupon = $coupon;
+        $this->view->picks = \Tahmin\Models\Coupon\CouponPick::find([
+            'conditions' => 'coupon_id = :id:',
+            'bind' => ['id' => $id]
+        ]);
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Create coupon page
+     */
+    public function createPageAction()
+    {
+        if (!$this->session->has('auth')) {
+            $this->flashSession->error('Lütfen giriş yapın');
+            return $this->response->redirect('/auth/login');
+        }
+
+        $this->view->setMainView('layouts/main');
+    }

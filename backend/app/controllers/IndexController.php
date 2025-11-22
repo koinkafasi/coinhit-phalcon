@@ -2,19 +2,36 @@
 
 namespace Tahmin\Controllers;
 
+use Tahmin\Models\Match\Match;
+use Tahmin\Models\Prediction\Prediction;
+
 class IndexController extends BaseController
 {
     /**
-     * Index action
+     * Index action - Homepage
      */
     public function indexAction()
     {
-        return $this->sendSuccess([
-            'name' => 'Tahmin1x2 API',
-            'version' => '1.0.0',
-            'framework' => 'Phalcon',
-            'description' => 'AI-powered Football Prediction Platform'
+        // Get today's matches
+        $todayMatches = Match::find([
+            'conditions' => 'match_date >= :today: AND match_date < :tomorrow:',
+            'bind' => [
+                'today' => date('Y-m-d 00:00:00'),
+                'tomorrow' => date('Y-m-d 23:59:59')
+            ],
+            'limit' => 6
         ]);
+
+        // Get top predictions
+        $topPredictions = Prediction::find([
+            'conditions' => 'confidence_level >= 80',
+            'order' => 'confidence_level DESC, created_at DESC',
+            'limit' => 6
+        ]);
+
+        $this->view->todayMatches = $todayMatches;
+        $this->view->topPredictions = $topPredictions;
+        $this->view->setMainView('layouts/main');
     }
 
     /**

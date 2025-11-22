@@ -141,3 +141,67 @@ class MatchController extends BaseController
         return $this->sendSuccess(['leagues' => $leagues->toArray()]);
     }
 }
+
+    /**
+     * Matches list page
+     */
+    public function listPageAction()
+    {
+        $page = $this->request->getQuery('page', 'int', 1);
+        $sport = $this->request->getQuery('sport', 'string');
+        $league = $this->request->getQuery('league', 'int');
+        $date = $this->request->getQuery('date', 'string', date('Y-m-d'));
+
+        $conditions = [];
+        $bind = [];
+
+        if ($sport) {
+            $conditions[] = 'sport = :sport:';
+            $bind['sport'] = $sport;
+        }
+
+        if ($league) {
+            $conditions[] = 'league_id = :league:';
+            $bind['league'] = $league;
+        }
+
+        if ($date) {
+            $conditions[] = 'DATE(match_date) = :date:';
+            $bind['date'] = $date;
+        }
+
+        $matchQuery = [
+            'conditions' => implode(' AND ', $conditions),
+            'bind' => $bind,
+            'order' => 'match_date ASC',
+            'limit' => 20,
+            'offset' => ($page - 1) * 20
+        ];
+
+        $this->view->matches = \Tahmin\Models\Match\Match::find($matchQuery);
+        $this->view->leagues = \Tahmin\Models\Match\League::find();
+        $this->view->page = (object)[
+            'current' => $page,
+            'total_pages' => ceil(\Tahmin\Models\Match\Match::count() / 20)
+        ];
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Match detail page
+     */
+    public function viewPageAction($id)
+    {
+        $match = \Tahmin\Models\Match\Match::findFirst($id);
+        if (!$match) {
+            $this->flashSession->error('Maç bulunamadı');
+            return $this->response->redirect('/matches');
+        }
+
+        $this->view->match = $match;
+        $this->view->predictions = \Tahmin\Models\Prediction\Prediction::find([
+            'conditions' => 'match_id = :id:',
+            'bind' => ['id' => $id]
+        ]);
+        $this->view->setMainView('layouts/main');
+    }

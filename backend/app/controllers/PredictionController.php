@@ -160,3 +160,63 @@ class PredictionController extends BaseController
         return $this->sendSuccess(['predictions' => $data]);
     }
 }
+
+    /**
+     * Predictions list page
+     */
+    public function listPageAction()
+    {
+        $page = $this->request->getQuery('page', 'int', 1);
+        $filter = $this->request->getQuery('filter', 'string', 'all');
+
+        $conditions = [];
+        $bind = [];
+
+        switch ($filter) {
+            case 'today':
+                $conditions[] = 'DATE(created_at) = CURDATE()';
+                break;
+            case 'high':
+                $conditions[] = 'confidence_level >= 80';
+                break;
+            case 'my':
+                if ($this->session->has('auth')) {
+                    $conditions[] = 'user_id = :userId:';
+                    $bind['userId'] = $this->session->get('auth')['id'];
+                }
+                break;
+        }
+
+        $queryParams = [
+            'order' => 'created_at DESC',
+            'limit' => 20,
+            'offset' => ($page - 1) * 20
+        ];
+
+        if (!empty($conditions)) {
+            $queryParams['conditions'] = implode(' AND ', $conditions);
+            $queryParams['bind'] = $bind;
+        }
+
+        $this->view->predictions = \Tahmin\Models\Prediction\Prediction::find($queryParams);
+        $this->view->page = (object)[
+            'current' => $page,
+            'total_pages' => ceil(\Tahmin\Models\Prediction\Prediction::count() / 20)
+        ];
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Prediction detail page
+     */
+    public function viewPageAction($id)
+    {
+        $prediction = \Tahmin\Models\Prediction\Prediction::findFirst($id);
+        if (!$prediction) {
+            $this->flashSession->error('Tahmin bulunamadı');
+            return $this->response->redirect('/predictions');
+        }
+
+        $this->view->prediction = $prediction;
+        $this->view->setMainView('layouts/main');
+    }

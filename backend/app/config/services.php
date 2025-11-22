@@ -104,6 +104,58 @@ $di->setShared('request', function () {
 });
 
 /**
+ * View service
+ */
+$di->setShared('view', function () {
+    $config = $this->getConfig();
+
+    $view = new \Phalcon\Mvc\View();
+    $view->setViewsDir($config->application->viewsDir);
+
+    // Register Volt as template engine
+    $view->registerEngines([
+        '.phtml' => \Phalcon\Mvc\View\Engine\Php::class
+    ]);
+
+    return $view;
+});
+
+/**
+ * Tag service for HTML helpers
+ */
+$di->setShared('tag', function () {
+    return new \Phalcon\Html\TagFactory();
+});
+
+/**
+ * Flash Session service
+ */
+$di->setShared('flashSession', function () {
+    return new \Phalcon\Flash\Session();
+});
+
+/**
+ * Session service
+ */
+$di->setShared('session', function () {
+    $session = new \Phalcon\Session\Manager();
+    $files = new \Phalcon\Session\Adapter\Stream([
+        'savePath' => sys_get_temp_dir(),
+    ]);
+    $session->setAdapter($files);
+    $session->start();
+
+    return $session;
+});
+
+/**
+ * Escaper service
+ */
+$di->setShared('escaper', function () {
+    return new \Phalcon\Html\Escaper();
+});
+
+/**
  * Router service
  */
 $di->setShared('router', function () {

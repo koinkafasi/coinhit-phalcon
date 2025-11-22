@@ -8,6 +8,42 @@ use Tahmin\Models\UserActivity;
 class AuthController extends BaseController
 {
     /**
+     * Login page
+     */
+    public function loginPageAction()
+    {
+        // Redirect if already logged in
+        if ($this->session->has('auth')) {
+            return $this->response->redirect('/user/dashboard');
+        }
+
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Register page
+     */
+    public function registerPageAction()
+    {
+        // Redirect if already logged in
+        if ($this->session->has('auth')) {
+            return $this->response->redirect('/user/dashboard');
+        }
+
+        $this->view->setMainView('layouts/main');
+    }
+
+    /**
+     * Logout
+     */
+    public function logoutAction()
+    {
+        $this->session->remove('auth');
+        $this->flashSession->success('Başarıyla çıkış yaptınız');
+        return $this->response->redirect('/');
+    }
+
+    /**
      * Register new user
      */
     public function registerAction()

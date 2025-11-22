@@ -3,13 +3,91 @@
 // API version prefix
 $router->setDefaultNamespace('Tahmin\Controllers');
 
-// Health check
+// ==================== FRONTEND ROUTES ====================
+// Homepage
 $router->addGet('/', [
     'controller' => 'index',
     'action' => 'index'
 ]);
 
-$router->addGet('/health', [
+// Auth pages
+$router->addGet('/auth/login', [
+    'controller' => 'auth',
+    'action' => 'loginPage'
+]);
+
+$router->addGet('/auth/register', [
+    'controller' => 'auth',
+    'action' => 'registerPage'
+]);
+
+$router->addPost('/auth/login', [
+    'controller' => 'auth',
+    'action' => 'login'
+]);
+
+$router->addPost('/auth/register', [
+    'controller' => 'auth',
+    'action' => 'register'
+]);
+
+$router->addGet('/auth/logout', [
+    'controller' => 'auth',
+    'action' => 'logout'
+]);
+
+// Match pages
+$router->addGet('/matches', [
+    'controller' => 'match',
+    'action' => 'listPage'
+]);
+
+$router->addGet('/matches/view/{id:[0-9]+}', [
+    'controller' => 'match',
+    'action' => 'viewPage'
+]);
+
+// Prediction pages
+$router->addGet('/predictions', [
+    'controller' => 'prediction',
+    'action' => 'listPage'
+]);
+
+$router->addGet('/predictions/view/{id:[0-9]+}', [
+    'controller' => 'prediction',
+    'action' => 'viewPage'
+]);
+
+// Coupon pages
+$router->addGet('/coupons', [
+    'controller' => 'coupon',
+    'action' => 'listPage'
+]);
+
+$router->addGet('/coupons/view/{id:[0-9]+}', [
+    'controller' => 'coupon',
+    'action' => 'viewPage'
+]);
+
+$router->addGet('/coupons/create', [
+    'controller' => 'coupon',
+    'action' => 'createPage'
+]);
+
+// User pages
+$router->addGet('/user/dashboard', [
+    'controller' => 'user',
+    'action' => 'dashboard'
+]);
+
+$router->addGet('/user/profile', [
+    'controller' => 'user',
+    'action' => 'profile'
+]);
+
+// ==================== API ROUTES ====================
+// Health check
+$router->addGet('/api/health', [
     'controller' => 'index',
     'action' => 'health'
 ]);
